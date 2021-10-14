@@ -10,12 +10,19 @@ const getUsers = (req, res) => {
 
 const getUser = (req, res) => {
   User.findById(req.params.id)
+    .orFail(() => {
+      const error = new Error('NotFound');
+      throw error;
+    })
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
+        res.status(400).send({ message: 'Передан некорректный id пользователя' });
+      } else if (err.message === 'NotFound') {
+        res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
+      } else {
+        res.status(500).send({ message: 'На сервере произошла ошибка' });
       }
-      return res.status(500).send({ message: 'На сервере произошла ошибка' });
     });
 };
 
@@ -38,13 +45,20 @@ const updateUser = (req, res) => {
     { name, about },
     { new: true, runValidators: true }, // обработчик then получит на вход обновлённую запись
   )
+    .orFail(() => {
+      const error = new Error('NotFound');
+      throw error;
+    })
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
+        res.status(400).send({ message: 'Передан некорректный id пользователя' });
+      } else if (err.message === 'NotFound') {
+        res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
       }
+
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
+        res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
       }
       return res.status(500).send({ message: 'На сервере произошла ошибка' });
     });
@@ -58,13 +72,20 @@ const updateUserAvatar = (req, res) => {
     { avatar },
     { new: true, runValidators: true }, // обработчик then получит на вход обновлённую запись
   )
+    .orFail(() => {
+      const error = new Error('NotFound');
+      throw error;
+    })
     .then((user) => res.status(200).send(user))
     .catch((err) => {
       if (err.name === 'CastError') {
-        return res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
+        res.status(400).send({ message: 'Передан некорректный id пользователя' });
+      } else if (err.message === 'NotFound') {
+        res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
       }
+
       if (err.name === 'ValidationError') {
-        return res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара' });
+        res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара' });
       }
       return res.status(500).send({ message: 'На сервере произошла ошибка' });
     });

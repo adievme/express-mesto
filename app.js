@@ -1,20 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const { errors } = require('celebrate');
 const routes = require('./routes/index');
+
+const { login, createUser } = require('./controllers/users');
+const { userValidate, loginValidate } = require('./validator/validator');
 
 const { PORT = 3000 } = process.env;
 
 const app = express();
 
-// добавляет в каждый запрос объект user, в котором идентификатор пользователя
-app.use((req, res, next) => {
-  req.user = {
-    _id: '616136c777d74c2c70b82244',
-  };
-  next();
-});
-
 app.use(express.json());
+
+app.post('/signin', loginValidate, login);
+app.post('/signup', userValidate, createUser);
 
 app.use(routes);
 app.use((req, res) => {
@@ -23,6 +22,14 @@ app.use((req, res) => {
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
   useNewUrlParser: true,
+});
+
+app.use(errors());
+
+app.use((err, req, res, next) => {
+  const { statusCode = 500, message } = err;
+  res.status(statusCode).send({ message: statusCode === 500 ? 'На сервере произошла ошибка' : message });
+  next();
 });
 
 app.listen(PORT, () => {

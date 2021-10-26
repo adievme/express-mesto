@@ -1,5 +1,5 @@
 const { celebrate, Joi } = require('celebrate');
-const { validator } = require('validator');
+const isURL = require('validator/lib/isURL');
 
 const userValidate = celebrate({
   body: Joi.object().keys({
@@ -38,16 +38,17 @@ const idValidate = celebrate({
 });
 
 const validateURL = (value) => {
-  if (!validator.isURL(value, { require_protocol: true })) {
-    throw new Error('Неправильный формат ссылки');
+  const result = isURL(value);
+  if (result) {
+    return value;
   }
-  return value;
+  throw new Error('Неправильный формат ссылки');
 };
 
 const cardValidate = celebrate({
   body: Joi.object().keys({
-    link: validateURL,
     name: Joi.string().required().min(2).max(30),
+    link: Joi.string().required().custom(validateURL),
   }),
 });
 

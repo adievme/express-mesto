@@ -5,6 +5,7 @@ const routes = require('./routes/index');
 
 const { login, createUser } = require('./controllers/users');
 const { userValidate, loginValidate } = require('./validator/validator');
+const NotFoundError = require('./errors/NotFoundError');
 
 const { PORT = 3000 } = process.env;
 
@@ -16,8 +17,8 @@ app.post('/signin', loginValidate, login);
 app.post('/signup', userValidate, createUser);
 
 app.use(routes);
-app.use((req, res) => {
-  res.status(404).send({ message: 'Ресурс не найден' });
+app.use(() => {
+  throw new NotFoundError('Ресурс не найден');
 });
 
 mongoose.connect('mongodb://localhost:27017/mestodb', {
